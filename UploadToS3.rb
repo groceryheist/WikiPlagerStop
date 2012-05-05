@@ -25,6 +25,12 @@ Dir.chdir directory
 d.each do |file|
 	base_name = File.basename(file)
 	puts "Uploading #{file} as #{base_name} to #{bucket.inspect}"
-	S3.store(base_name,File.open(file),bucket)
+	#S3.store(base_name,File.open(file),bucket)
+	S3Object.new(bucket,base_name,{})
+	response = S3Object.object_request(:put,S3Object.url(bucket,{}))
+	response.status[0] == "200" ?
+		S3Object.new(bucket,base_name,{}) :false
+	end
+	
 end
 	

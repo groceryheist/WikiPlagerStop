@@ -1,36 +1,35 @@
 require 'rubygems'
-require 'aws-sdk'
-require 'yaml'
+#require 'aws-sdk'
+require 'aws/s3'
+debug = true
+#require 'yaml'
 
-YAML::load(File.open('aws_config.yml'))
+#YAML::load(File.open('aws_config.yml'))
 #AWS.config(
 #	YAML::load(File.open('aws_config.yml'))
 #	)
 	
 	#create the basic S3 object
-AWS.config({
+ AWS::S3::Base.establish_connection!(
 	:access_key_id => 'AKIAJVG3NHOJGID6X55Q',
 	:secret_access_key => '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',
-})
-	S3 = AWS::S3.new
+)
 	bucket_name = "extractedwexnatet"
-	bucket = S3.buckets[bucket_name]
-	unless bucket.exists?
-		puts "Making bucket #{bucket_name}.."
-		S3.buckets.create(bucket_name)
-	end
-directory = "/home/ubuntu/WikiData"
+
+	bucket = AWS::S3::Bucket.create(bucket_name,{})
+
+  puts "#{bucket.inspect}"
+  puts "Creating Bucket #{bucket_name}"
+
+directory = "WikiData"
 d = Dir.new(directory)
 Dir.chdir directory
 d.each do |file|
-	base_name = File.basename(file)
+	next if file =='.' or file == '..'
+  base_name = File.basename(file)
 	puts "Uploading #{file} as #{base_name} to #{bucket.inspect}"
-	#S3.store(base_name,File.open(file),bucket)
-	S3Object.new(bucket,base_name,{})
-	response = S3Object.object_request(:put,S3Object.url(bucket,{}))
-	response.status[0] == "200" ?
-		S3Object.new(bucket,base_name,{}) :false
-	end
-	
+	AWS::S3::S3Object.store(file,open(file),bucket_name)
+
+
 end
 	
